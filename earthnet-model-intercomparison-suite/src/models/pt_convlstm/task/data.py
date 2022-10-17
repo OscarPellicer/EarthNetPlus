@@ -12,8 +12,7 @@ import warnings
 
 import sys
 from pathlib import Path
-utils_dir = Path(__file__).parent.parent.parent.parent.parent.parent.parent
-#print(f'File: {__file__}; utils dir: {utils_dir}')
+utils_dir = Path(__file__).resolve().parent.parent.parent.parent.parent.parent.parent
 sys.path.append(str(utils_dir))
 from utils import str2bool, load
 
@@ -101,6 +100,7 @@ class EarthNet2021Dataset(Dataset):
         if self.online_time_downsample > 1:
             images= np.mean(images.reshape(self.online_time_downsample, 
                             images.shape[0]//self.online_time_downsample, *images.shape[1:]), axis=0)
+            # images= images[self.online_time_downsample-1 :: self.online_time_downsample]
             mesodynamic= np.mean(mesodynamic.reshape(self.online_time_downsample, 
                                  mesodynamic.shape[0]//self.online_time_downsample, *mesodynamic.shape[1:]), axis=0)
             masks= (np.mean(masks.reshape(self.online_time_downsample, 

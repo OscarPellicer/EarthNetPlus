@@ -7,7 +7,7 @@ import pytorch_lightning as pl
 import yaml
 
 # go to the project root directory and add it to path
-proj_root_dir = Path(__file__).parent.parent.parent.parent
+proj_root_dir = Path(__file__).resolve().parent.parent.parent.parent
 sys.path.append(str(proj_root_dir))
 os.chdir(proj_root_dir)
 
@@ -48,6 +48,7 @@ def train_model(setting_dict: dict):
     model_params = model_parser.parse_args(model_args)
     vars(model_params)['context_length']= setting_dict['context_length']
     vars(model_params)['target_length']= setting_dict['target_length']
+    vars(model_params)['time_downsample']= setting_dict['time_downsample']
     model = __MODELS__[setting_dict["Architecture"]](model_params)
 
     # Task

@@ -8,20 +8,18 @@ import numpy as np
 import pytorch_lightning as pl
 import yaml
 
-# go to the project root directory and add it to path
-proj_root_dir = Path(__file__).parent.parent.parent.parent
-sys.path.append(str(proj_root_dir))
-os.chdir(proj_root_dir)
-
-calc_dir= Path(__file__).parent.parent.parent.parent.parent.parent.parent / 'earthnet-toolkit'
+calc_dir= Path(__file__).resolve().parent.parent.parent.parent.parent / 'earthnet-toolkit'
 sys.path.append(str(calc_dir))
-print(f'File: {__file__}; calc_dir: {calc_dir}')
 from earthnet.parallel_score import EarthNetScore
 
-utils_dir = Path.cwd().parent.parent.parent.parent
-#print(f'File: {__file__}; utils dir: {utils_dir}')
+utils_dir = Path(__file__).resolve().parent.parent.parent.parent.parent
 sys.path.append(str(utils_dir))
 from utils import str2bool
+
+# go to the project root directory and add it to path
+proj_root_dir = Path(__file__).resolve().parent.parent.parent.parent
+sys.path.append(str(proj_root_dir))
+os.chdir(proj_root_dir)
 
 from model.conv_lstm.conv_lstm_en import ConvLSTMen
 from task.data import EarthNet2021DataModule
@@ -57,6 +55,7 @@ def test_model(setting_dict: dict, checkpoint: str):
     model_params = model_parser.parse_args(model_args)
     vars(model_params)['context_length']= setting_dict['context_length']
     vars(model_params)['target_length']= setting_dict['target_length']
+    vars(model_params)['time_downsample']= setting_dict['time_downsample']
     model = __MODELS__[setting_dict["Architecture"]](model_params)
 
     # Task

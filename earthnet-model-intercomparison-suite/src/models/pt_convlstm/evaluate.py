@@ -5,21 +5,18 @@ from argparse import ArgumentParser
 import yaml
 import warnings
 
-# go to the project root directory and add it to path
-proj_root_dir = Path(__file__).parent.parent.parent.parent
-sys.path.append(str(proj_root_dir))
-os.chdir(proj_root_dir)
-#print(f"cwd = {Path.cwd()}")
-
-calc_dir= Path(__file__).parent.parent.parent.parent.parent.parent.parent / 'earthnet-toolkit'
+calc_dir= Path(__file__).resolve().parent.parent.parent.parent.parent / 'earthnet-toolkit'
 sys.path.append(str(calc_dir))
-print(f'File: {__file__}; calc_dir: {calc_dir}')
 from earthnet.parallel_score import EarthNetScore
 
-utils_dir = Path.cwd().parent.parent.parent.parent
-#print(f'File: {__file__}; utils dir: {utils_dir}')
+utils_dir = Path(__file__).resolve().parent.parent.parent.parent.parent
 sys.path.append(str(utils_dir))
 from utils import str2bool
+
+# go to the project root directory and add it to path
+proj_root_dir= Path(__file__).resolve().parent.parent.parent.parent
+sys.path.append(str(proj_root_dir))
+os.chdir(proj_root_dir)
 
 __TRACKS__ = {
         "iid": "iid_test_split/",

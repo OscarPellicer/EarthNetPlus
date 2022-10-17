@@ -7,8 +7,7 @@ from torch import nn
 
 import sys
 from pathlib import Path
-utils_dir = Path(__file__).parent.parent.parent.parent.parent.parent.parent
-#print(f'File: {__file__}; utils dir: {utils_dir}')
+utils_dir = Path(__file__).resolve().parent.parent.parent.parent.parent.parent.parent
 sys.path.append(str(utils_dir))
 from utils import str2bool
 from .ConvLSTM import ConvLSTM
@@ -67,6 +66,7 @@ class ConvLSTMen(nn.Module):
         parser.add_argument("--use_mask_as_input", type=str2bool, default=False)
         parser.add_argument("--use_scalars", type=str2bool, default=True)
         parser.add_argument("--use_dem_as_dynamic", type=str2bool, default=True)
+        parser.add_argument('--time_downsample', type = int, default = 1)
 
         return parser
 

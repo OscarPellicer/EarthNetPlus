@@ -13,8 +13,7 @@ from torch import nn
 
 import sys
 from pathlib import Path
-utils_dir = Path(__file__).parent.parent.parent.parent.parent.parent.parent
-#print(f'File: {__file__}; utils dir: {utils_dir}')
+utils_dir = Path(__file__).resolve().parent.parent.parent.parent.parent.parent.parent
 sys.path.append(str(utils_dir))
 from utils import str2bool
 

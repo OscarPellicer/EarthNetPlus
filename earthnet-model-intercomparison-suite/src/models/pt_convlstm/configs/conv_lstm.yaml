@@ -1,8 +1,8 @@
 Seed: 42
 Architecture: "conv_lstm"
-time_downsample: 1 #Global downsampling used
-context_length: 10 #Change according to downsampling. E.g.: 5 for time_downsample 2
-target_length: 20 #Change according to downsampling. E.g.: 10 for time_downsample 2
+time_downsample: 2 #Global downsampling used
+context_length: 5 #Change according to downsampling. E.g.: 5 for time_downsample 2
+target_length: 10 #Change according to downsampling. E.g.: 10 for time_downsample 2
 dataset_dir: "D:/oscar/EarthNet" #Path to the original unprocessed dataset (for evaluation)
 
 Logger:
@@ -17,7 +17,7 @@ Data:
   fp16: True
   val_pct: 0.01
   val_split_seed: 42
-  train_batch_size: 4
+  train_batch_size: 8
   val_batch_size: 16
   test_batch_size: 16
   train_shuffle: True
@@ -28,7 +28,7 @@ Data:
   online_data_augmentation: True
   #Perform online time downsampling if it was not done already
   #or leave at one to not do anything
-  online_time_downsample: 1
+  online_time_downsample: 2
 
 Task:
   loss:

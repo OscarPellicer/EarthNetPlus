@@ -10,7 +10,6 @@ import sys
 from pathlib import Path
 calc_dir = Path(__file__).parent.parent.parent.parent.parent.parent / 'earthnet-toolkit'
 sys.path.append(str(calc_dir))
-#print(f'File: {__file__}; calc_dir: {calc_dir}')
 from earthnet.parallel_score import CubeCalculator as calc
 
 def parallel_calc(row):
