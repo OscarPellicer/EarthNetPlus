@@ -1,0 +1,9 @@
+*.ipynb_checkpoints
+*__pycache__
+Papers/
+EarthNet playground.ipynb
+EarthNet playground.html
+*.vscode
+*pt_template
+*tf_template
+*weather2land

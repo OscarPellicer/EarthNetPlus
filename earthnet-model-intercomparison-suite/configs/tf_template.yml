@@ -1,0 +1,27 @@
+---
+# Mapping from run.py into src/models/tf_template submodule
+entry_point:
+    test: src/models/tf_template/generate_earthnet.py
+    train: src/models/tf_template/train_earthnet.py
+conda_env: ENtf115py36
+
+#argument-to-tf_template_entry.py: argument to run.py
+mapped_args_train:
+    input_dir: data_expr_dir
+    checkpoint: check_expr_dir
+    model: submodel
+    model_hparams_dict: set_expr_dir
+    resume: resume
+    dataset: dataset
+    dataset_hparams_dict: set_expr_dir
+mapped_args_test:
+    input_dir: data_expr_dir
+    output_dir: out_expr_dir
+    checkpoint: check_expr_dir
+    model: submodel
+    dataset: dataset
+    num_stochastic_samples: num_stochastic_samples
+    batch_size: batch_size
+    context_length: context_length
+    prediction_length: prediction_length
+...
