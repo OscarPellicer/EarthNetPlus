@@ -1,7 +1,10 @@
 from pathlib import Path
-import os, sys, numpy as np, matplotlib.pyplot as plt, glob
+import os, sys, numpy as np, matplotlib.pyplot as plt, glob, tqdm
 import datetime
 from utils import timer, save, load, quick_fill, ESA_scenes, detect_outlier_slices, plot_all
+from argparse import ArgumentParser
+from random import Random
+from scipy.ndimage import binary_dilation
 
 sys.path.append('earthnet-toolkit')
 from earthnet import Downloader, get_coords_from_cube
@@ -18,6 +21,7 @@ def str2bool(v):
 
 def preprocess_dataset(
     download_path,
+    preprocessed_path, 
     time_downsample= 1, #Only 1, 2 or 5 are acceptable for an (almost) proper earthnet evaluation
     process_target= False, #If False, target folder in test tracks is ignored (preferred)
     first_forward= False, #Only apply forward filling
@@ -27,7 +31,7 @@ def preprocess_dataset(
     masking_threshold_low= 0.075,
     masking_threshold_high= 0.4,
     subsets= ['iid_test_split', 'train', 'ood_test_split', 'seasonal_test_split', 'extreme_test_split'],
-    )
+    ):
     '''
         Preprocesses the dataset in the following ways:
             - Quality mask is slighlty processed
@@ -37,7 +41,7 @@ def preprocess_dataset(
             - Optionally, data is temporarily subsampled
             - Coordinate and date data is added to the final dictionary
     '''
-
+    se= np.zeros((3,3,3)); se[1]=1; se=se.T
     image_dict= {}
 
     for subset in subsets:
@@ -118,16 +122,18 @@ def preprocess_dataset(
                 #h, w, c, t -> t, c, h, w
                 hrdyn, img, qmask= np.transpose(hrdyn, (3,2,0,1)), np.transpose(img, (3,2,0,1)), np.transpose(qmask, (3,2,0,1))
                 plot_all(hrdyn, img[:,[2,1,0]], qmask, downsample_time=1, title=f'i={i}: {cubename}', scale=1, 
-                         save_path=os.path.join(OUT_PATH, subset + '_samples', cubename + '.png'))
+                         save_path=os.path.join(preprocessed_path, subset + '_samples', cubename + '.png'))
             
             
 if __name__ == '__main__':    
     parser = ArgumentParser()
     parser.add_argument('--download', type=str2bool, default=False, help='Whether to download the data')
     parser.add_argument('--download_path', type=str, required=True, metavar='path/where/data/is/to/be/downloaded', help='Download path')
-    parser.add_argument('--preprocessed_path', type=str, required=True, metavar='path/where/preprocessed/data/will/be/saved',
+    parser.add_argument('--preprocess_path', type=str, required=True, metavar='path/where/preprocessed/data/will/be/saved',
                         help='Path for preprocessed data')
     parser.add_argument('--overwrite', type=str2bool, default=False, help='Whether to overwrite already processed data')
+    args = parser.parse_args()
     
-    Downloader.get(args.download_path, 'all')
-    preprocess_dataset(args.download_path, args.preprocessed_path, overwrite=args.overwrite)
+    if args.download:
+        Downloader.get(args.download_path, 'all')
+    preprocess_dataset(args.download_path, args.preprocess_path, overwrite=args.overwrite)

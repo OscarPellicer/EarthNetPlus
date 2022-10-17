@@ -60,8 +60,19 @@ class EarthNet2021Dataset(Dataset):
         highresstatic[np.isnan(highresstatic)] = 0
         mesostatic[np.isnan(mesostatic)] = 0
 
+        #Left for backwards compatibility only
         if self.noisy_masked_pixels:            
             warnings.warn('noisy_masked_pixels is no longer needed', DeprecationWarning)
+            # images = np.transpose(images,(1,0,2,3))
+            # all_pixels = images[np.transpose(masks, (1,0,2,3)) == 1].reshape(4,-1)
+            # all_pixels = np.stack(int(images.size/all_pixels.size+1)*[all_pixels],axis = 1)
+            # all_pixels = all_pixels.reshape(4,-1)
+            # all_pixels = all_pixels.transpose(1,0)
+            # np.random.shuffle(all_pixels)
+            # all_pixels = all_pixels.transpose(1,0)
+            # all_pixels = all_pixels[:,:images.size//4].reshape(*images.shape)
+            # images = np.where(np.transpose(masks, (1,0,2,3)) == 0, all_pixels, images)
+            # images = np.transpose(images,(1,0,2,3))
 
         if self.use_meso_static_as_dynamic:
             mesodynamic = np.concatenate([mesodynamic, mesostatic[np.newaxis, :, :, :].repeat(mesodynamic.shape[0], 0)], axis = 1)

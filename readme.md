@@ -50,7 +50,7 @@ where:
  - `&&`: Execute if first command was successful
  - `||`: Execute if first command was unsuccessful
  
-You simply call `test.py` with the evaluate argument set to true:
+Or you simply call `test.py` with the evaluate argument set to true:
 ```{bash}
 python test.py --setting "D:\oscar\Earthnet experiments\conv_lstm\version_25\settings.yaml" --version 25 --track all --evaluate True
 ```

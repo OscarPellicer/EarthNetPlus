@@ -16,6 +16,11 @@ sys.path.append(str(calc_dir))
 print(f'File: {__file__}; calc_dir: {calc_dir}')
 from earthnet.parallel_score import EarthNetScore
 
+utils_dir = Path.cwd().parent.parent.parent.parent
+#print(f'File: {__file__}; utils dir: {utils_dir}')
+sys.path.append(str(utils_dir))
+from utils import str2bool
+
 __TRACKS__ = {
         "iid": "iid_test_split/",
         "ood": "ood_test_split/",

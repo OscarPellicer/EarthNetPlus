@@ -8,8 +8,6 @@ import numpy as np
 import pytorch_lightning as pl
 import yaml
 
-from models.weather2land.code.utils.utils_general import str2bool
-
 # go to the project root directory and add it to path
 proj_root_dir = Path(__file__).parent.parent.parent.parent
 sys.path.append(str(proj_root_dir))
@@ -19,6 +17,11 @@ calc_dir = Path.cwd().parent.parent.parent.parent / 'earthnet-toolkit'
 sys.path.append(str(calc_dir))
 print(f'File: {__file__}; calc_dir: {calc_dir}')
 from earthnet.parallel_score import EarthNetScore
+
+utils_dir = Path.cwd().parent.parent.parent.parent
+#print(f'File: {__file__}; utils dir: {utils_dir}')
+sys.path.append(str(utils_dir))
+from utils import str2bool
 
 from model.conv_lstm.conv_lstm_en import ConvLSTMen
 from task.data import EarthNet2021DataModule

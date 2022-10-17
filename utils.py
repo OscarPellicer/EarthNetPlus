@@ -1,11 +1,11 @@
-from scipy.ndimage import binary_dilation
 from scipy.ndimage.morphology import binary_erosion
 from random import Random
 import tqdm
 from time import time
 import pickle, bz2, lzma, gzip
 import numpy as np
-import argparse
+import argparse, os
+import matplotlib.pyplot as plt
 
 def str2bool(v):
     if isinstance(v, bool):
@@ -16,8 +16,6 @@ def str2bool(v):
         return False
     else:
         raise argparse.ArgumentTypeError('Boolean value expected.')
-
-se= np.zeros((3,3,3)); se[1]=1; se=se.T
 
 ESA_scenes= {0: 'No data', 1: 'Saturated / Defective', 2: 'Dark Area Pixels',
              3: 'Cloud Shadows', 4: 'Vegetation', 5: 'Bare Soils', 6: 'Water',
