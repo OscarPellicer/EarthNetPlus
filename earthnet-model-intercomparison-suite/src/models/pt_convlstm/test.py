@@ -13,7 +13,7 @@ proj_root_dir = Path(__file__).parent.parent.parent.parent
 sys.path.append(str(proj_root_dir))
 os.chdir(proj_root_dir)
 
-calc_dir = Path.cwd().parent.parent.parent.parent / 'earthnet-toolkit'
+calc_dir= Path(__file__).parent.parent.parent.parent.parent.parent.parent / 'earthnet-toolkit'
 sys.path.append(str(calc_dir))
 print(f'File: {__file__}; calc_dir: {calc_dir}')
 from earthnet.parallel_score import EarthNetScore
@@ -45,6 +45,9 @@ def test_model(setting_dict: dict, checkpoint: str):
     data_parser = ArgumentParser()
     data_parser = EarthNet2021DataModule.add_data_specific_args(data_parser)
     data_params = data_parser.parse_args(data_args)
+    vars(data_params)['time_downsample']= setting_dict['time_downsample']
+    assert setting_dict['time_downsample'] >= vars(data_params)['online_time_downsample'],\
+        "If applying online_time_downsample, time_downsample must set to online_time_downsample"
     dm = EarthNet2021DataModule(data_params)
 
     # Model
@@ -117,7 +120,12 @@ if __name__ == "__main__":
         tracks= [args.track]
 
     for track in tracks:
-        print('Testing track:', track)
+        print('Info: Testing track:', track)
+
+        setting_dict["context_length"]*= 1 if args.track in ["iid", "ood"] else 2 if args.track == "ex" else 7 if args.track == "sea" else 1
+        setting_dict["target_length"]*=  1 if args.track in ["iid", "ood"] else 2 if args.track == "ex" else 7 if args.track == "sea" else 1
+        print(f'Info: context_length set to {setting_dict["context_length"]}, target_length set to {setting_dict["target_length"]}')
+
         #If version is provided 
         if args.version is not None:
             if not f'version_{args.version}' in args.setting:

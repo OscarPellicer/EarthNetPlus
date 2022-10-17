@@ -7,7 +7,7 @@ from torch import nn
 
 import sys
 from pathlib import Path
-utils_dir = Path.cwd().parent.parent.parent.parent
+utils_dir = Path(__file__).parent.parent.parent.parent.parent.parent.parent
 #print(f'File: {__file__}; utils dir: {utils_dir}')
 sys.path.append(str(utils_dir))
 from utils import str2bool
@@ -128,7 +128,7 @@ class ConvLSTMen(nn.Module):
                 inputs.append(mask[:, t, [0]])
             
             if self.hparams.use_scalars:
-                inputs.append(scalars) #Add scalars 
+                inputs.append(scalars[:, t]) #Add scalars 
 
             inputs = torch.cat(inputs, dim=1)
 
@@ -159,7 +159,7 @@ class ConvLSTMen(nn.Module):
                 inputs.append(mask[:, self.hparams.context_length + t, [0], ...])
 
             if self.hparams.use_scalars:
-                inputs.append(scalars) #Add scalars 
+                inputs.append(scalars[:, self.hparams.context_length + t, ...]) #Add scalars 
 
             inputs = torch.cat(inputs, dim=1)
 

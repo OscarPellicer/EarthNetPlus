@@ -36,6 +36,9 @@ def train_model(setting_dict: dict):
     data_parser = ArgumentParser()
     data_parser = EarthNet2021DataModule.add_data_specific_args(data_parser)
     data_params = data_parser.parse_args(data_args)
+    vars(data_params)['time_downsample']= setting_dict['time_downsample']
+    assert setting_dict['time_downsample'] >= vars(data_params)['online_time_downsample'],\
+        "If applying online_time_downsample, time_downsample must set to online_time_downsample"
     dm = EarthNet2021DataModule(data_params)
 
     # Model

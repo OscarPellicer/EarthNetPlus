@@ -12,7 +12,7 @@ import warnings
 
 import sys
 from pathlib import Path
-utils_dir = Path.cwd().parent.parent.parent.parent
+utils_dir = Path(__file__).parent.parent.parent.parent.parent.parent.parent
 #print(f'File: {__file__}; utils dir: {utils_dir}')
 sys.path.append(str(utils_dir))
 from utils import str2bool, load
@@ -20,7 +20,7 @@ from utils import str2bool, load
 class EarthNet2021Dataset(Dataset):
     def __init__(self, folder: Union[Path, str], noisy_masked_pixels = False, 
                 use_meso_static_as_dynamic = False, fp16 = False, 
-                online_data_augmentation=True, online_time_downsample=1):
+                online_data_augmentation=True, online_time_downsample=1, time_downsample=1):
         if not isinstance(folder, Path):
             folder = Path(folder)
         assert (not {"target","context"}.issubset(set([d.name for d in folder.glob("*") if d.is_dir()])))
@@ -32,6 +32,7 @@ class EarthNet2021Dataset(Dataset):
         self.use_meso_static_as_dynamic = use_meso_static_as_dynamic
         self.online_data_augmentation= online_data_augmentation
         self.online_time_downsample= online_time_downsample
+        self.time_downsample= time_downsample
         self.type = np.float16 if fp16 else np.float32
         self.rng = np.random.default_rng(seed=42)
 
@@ -77,22 +78,6 @@ class EarthNet2021Dataset(Dataset):
         if self.use_meso_static_as_dynamic:
             mesodynamic = np.concatenate([mesodynamic, mesostatic[np.newaxis, :, :, :].repeat(mesodynamic.shape[0], 0)], axis = 1)
 
-        #Process numerical data
-        min_long, max_long, min_lat, max_lat= -15, 30, 35, 70
-        coords= npz["coordinates"]
-        coordinates= ((coords[0] - min_long) / (max_long - min_long),
-                      (coords[1] - min_lat) / (max_lat - min_lat))
-        #Cosine encoding of day of year
-        day= npz["date"].timetuple().tm_yday
-        daysin = np.sin(2 * np.pi * day/365.0)
-        daycos = np.cos(2 * np.pi * day/365.0)        
-
-        scalars= torch.ones(4, *highresdynamic.shape[-2:])
-        scalars[0]*= coords[0]
-        scalars[1]*= coords[1]
-        scalars[2]*= daysin
-        scalars[3]*= daycos
-
         #Data augmentation
         if self.online_data_augmentation:
             #Rotate 0-270
@@ -121,6 +106,30 @@ class EarthNet2021Dataset(Dataset):
             masks= (np.mean(masks.reshape(self.online_time_downsample, 
                            masks.shape[0]//self.online_time_downsample, *masks.shape[1:]), axis=0) > 0.49).astype(self.type)
 
+        #Standarization of coordinate data
+        min_long, max_long, min_lat, max_lat= -15, 30, 35, 70
+        coords= npz["coordinates"]
+        coordinates= ((coords[0] - min_long) / (max_long - min_long),
+                      (coords[1] - min_lat) / (max_lat - min_lat))
+
+        #Cosine encoding of day of year
+        _, _, w, h= highresdynamic.shape
+        t2, _, _, _= mesodynamic.shape
+        if 'start_date' not in npz.keys(): #backwards compatibility
+            end_day= npz['date'].timetuple().tm_yday
+            start_day= end_day - self.time_downsample * t2 * 5
+        else:
+            start_day= npz['start_date'].timetuple().tm_yday
+            end_day= npz['end_date'].timetuple().tm_yday
+        day_range= 2 * np.pi * np.arange(start_day, end_day-0.1, step=self.time_downsample*5) / 365.0  
+
+        scalars= np.ones((t2, 4, w, h)).astype(self.type)
+        scalars[:,0]*= coords[0]
+        scalars[:,1]*= coords[1]
+        scalars[:,2]*= np.sin(day_range)[:, None, None]
+        scalars[:,3]*= np.cos(day_range)[:, None, None]
+        scalars= scalars.astype(self.type)
+
         data = {
             "dynamic": [
                 torch.from_numpy(images.copy()),
@@ -135,12 +144,12 @@ class EarthNet2021Dataset(Dataset):
             ] if not self.use_meso_static_as_dynamic else [
                 torch.from_numpy(highresstatic.copy())
             ],
-            "scalars": scalars,
+            "scalars": torch.from_numpy(scalars),
             "filepath": str(filepath),
             "cubename": self.__name_getter(filepath),
             "long": coordinates[0],
             "lat": coordinates[1],
-            "dayofyear": day,
+            "dayofyear": start_day,
         }
 
         return data
@@ -209,6 +218,7 @@ class EarthNet2021DataModule(pl.LightningDataModule):
 
         parser.add_argument('--online_data_augmentation', type = str2bool, default = True)
         parser.add_argument('--online_time_downsample', type = int, default = 1)
+        parser.add_argument('--time_downsample', type = int, default = 1)
 
         return parser
 
@@ -218,7 +228,9 @@ class EarthNet2021DataModule(pl.LightningDataModule):
             earthnet_corpus = EarthNet2021Dataset(self.base_dir / "train",
                                                   noisy_masked_pixels=self.hparams.noisy_masked_pixels,
                                                   use_meso_static_as_dynamic=self.hparams.use_meso_static_as_dynamic,
-                                                  fp16=self.hparams.fp16, 
+                                                  fp16=self.hparams.fp16,
+                                                  online_time_downsample=self.hparams.online_time_downsample,
+                                                  time_downsample=self.hparams.time_downsample,
                                                   online_data_augmentation=self.hparams.online_data_augmentation)
 
             val_size = int(self.hparams.val_pct * len(earthnet_corpus))
@@ -233,6 +245,8 @@ class EarthNet2021DataModule(pl.LightningDataModule):
                                                      noisy_masked_pixels=self.hparams.noisy_masked_pixels,
                                                      use_meso_static_as_dynamic=self.hparams.use_meso_static_as_dynamic,
                                                      fp16=self.hparams.fp16,
+                                                     online_time_downsample=self.hparams.online_time_downsample,
+                                                     time_downsample=self.hparams.time_downsample,
                                                      online_data_augmentation=False)
 
     def train_dataloader(self) -> DataLoader:

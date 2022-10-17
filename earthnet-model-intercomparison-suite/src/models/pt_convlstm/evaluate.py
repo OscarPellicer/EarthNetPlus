@@ -11,7 +11,7 @@ sys.path.append(str(proj_root_dir))
 os.chdir(proj_root_dir)
 #print(f"cwd = {Path.cwd()}")
 
-calc_dir = Path.cwd().parent.parent.parent.parent / 'earthnet-toolkit'
+calc_dir= Path(__file__).parent.parent.parent.parent.parent.parent.parent / 'earthnet-toolkit'
 sys.path.append(str(calc_dir))
 print(f'File: {__file__}; calc_dir: {calc_dir}')
 from earthnet.parallel_score import EarthNetScore
@@ -55,7 +55,12 @@ if __name__ == "__main__":
         tracks= [args.track]
 
     for track in tracks:
-        print('Testing track:', track)
+        print('Info: Testing track:', track)
+
+        setting_dict["context_length"]*= 1 if args.track in ["iid", "ood"] else 2 if args.track == "ex" else 7 if args.track == "sea" else 1
+        setting_dict["target_length"]*=  1 if args.track in ["iid", "ood"] else 2 if args.track == "ex" else 7 if args.track == "sea" else 1
+        print(f'Info: context_length set to {setting_dict["context_length"]}, target_length set to {setting_dict["target_length"]}')
+
         #If version is provided 
         if args.version is not None or args.pred_dir is None:
             if not f'version_{args.version}' in args.setting:

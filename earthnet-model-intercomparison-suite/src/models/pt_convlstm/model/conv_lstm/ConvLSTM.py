@@ -40,8 +40,7 @@ class ConvLSTMCell(nn.Module):
         self.padding = kernel_size[0] // 2, kernel_size[1] // 2
         self.bias = bias
 
-        if convs_per_cell == 1:
-            print('compatibility with previous wheights on')
+        if convs_per_cell == 1: #Backwasrds compatibility
             self.conv= nn.Conv2d(  in_channels=self.input_dim + self.hidden_dim,
                                         out_channels=4 * self.hidden_dim,
                                         kernel_size=self.kernel_size,

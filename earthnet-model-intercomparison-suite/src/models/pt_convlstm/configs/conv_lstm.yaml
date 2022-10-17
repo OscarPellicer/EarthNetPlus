@@ -60,7 +60,7 @@ Trainer:
   limit_val_batches: 1.0
   limit_test_batches: 1.0
   log_every_n_steps: 10
-  max_epochs: 60
+  max_epochs: 80
 
 Model:
   use_clim_vars: True

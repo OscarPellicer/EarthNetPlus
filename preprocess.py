@@ -109,7 +109,9 @@ def preprocess_dataset(
                 _, start_date, end_date, _, _, _, _, _, _, _, _ = os.path.splitext(cubename)[0].split("_")
             else:
                 _, _, start_date, end_date, _, _, _, _, _, _, _, _ = os.path.splitext(cubename)[0].split("_")
-            image_dict['date']= datetime.datetime.strptime(end_date, '%Y-%m-%d')
+            #image_dict['date']= datetime.datetime.strptime(end_date, '%Y-%m-%d') #For backwards compatibilty
+            image_dict['start_date']= datetime.datetime.strptime(start_date, '%Y-%m-%d')
+            image_dict['end_date']= datetime.datetime.strptime(end_date, '%Y-%m-%d')
 
             #Save
             if save_cubes:
