@@ -166,8 +166,13 @@ class STFTask(pl.LightningModule):
                 if self.hparams.time_downsample > 1:
                     t, c, h, w= pred.shape
                     pred2= np.zeros((self.hparams.target_length*self.hparams.time_downsample, c, h, w))
-                    for k in range(self.hparams.time_downsample):
-                        pred2[k::self.hparams.time_downsample]= pred
+                    if False: #self.hparams.time_downsample == 2: #Custom processing for n=2
+                        #Assuming we used averaging for downsampling, and not just holding
+                        #TO DO
+                        pass
+                    else:
+                        for k in range(self.hparams.time_downsample):
+                            pred2[k::self.hparams.time_downsample]= pred
                     pred= pred2
                 #save(str(cube_path), pred.permute(2,3,1,0), 'zip')
                 np.savez_compressed(str(cube_path) + '.npz', highresdynamic=np.transpose(pred,(2, 3, 1, 0)))

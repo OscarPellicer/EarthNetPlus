@@ -84,7 +84,8 @@ def preprocess_dataset(
             qmask= np.repeat(qmask[...,None,:], repeats=img.shape[2], axis=2) #Extend qmask to the same shape as img
             img, qmask, ffill, fmask, bfill, bmask= quick_fill(img, qmask, first_forward=first_forward)
 
-            #Finally, sample using the median every N images
+            #Finally, sample using the mean every N images
+            #Note that the temporary axis must be to the right of the original axis, otherwise this does not work!
             img= np.mean(img.reshape(*img.shape[:-1], img.shape[-1]//time_downsample, time_downsample), axis=-1)
             qmask= np.mean(qmask.reshape(*qmask.shape[:-1], qmask.shape[-1]//time_downsample, time_downsample), axis=-1) > 0.499
 

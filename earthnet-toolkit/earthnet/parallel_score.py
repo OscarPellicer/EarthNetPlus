@@ -396,7 +396,7 @@ class EarthNetScore:
         if "target" in [d.name for d in targ_dir.glob("*") if d.is_dir()]:
             targ_dir = targ_dir/"target"
 
-        assert({d.name for d in pred_dir.glob("*") if d.is_dir()}.issubset({d.name for d in targ_dir.glob("*") if d.is_dir()}))
+        #assert({d.name for d in pred_dir.glob("*") if d.is_dir()}.issubset({d.name for d in targ_dir.glob("*") if d.is_dir()}))
 
         targ_paths = sorted(list(targ_dir.glob("**/*.npz")))
 

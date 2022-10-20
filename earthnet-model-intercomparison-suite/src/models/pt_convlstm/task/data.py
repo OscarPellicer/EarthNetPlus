@@ -97,14 +97,20 @@ class EarthNet2021Dataset(Dataset):
                 mesostatic= np.flip(mesostatic, axis=-1)
 
         #Perform online time downsampling
+        #Note that the temporary axis must be to the right of the original axis, otherwise this does not work!
         if self.online_time_downsample > 1:
-            images= np.mean(images.reshape(self.online_time_downsample, 
-                            images.shape[0]//self.online_time_downsample, *images.shape[1:]), axis=0)
+            images= np.mean(images.reshape( 
+                            images.shape[0]//self.online_time_downsample, self.online_time_downsample,
+                            *images.shape[1:]), axis=1)
             # images= images[self.online_time_downsample-1 :: self.online_time_downsample]
-            mesodynamic= np.mean(mesodynamic.reshape(self.online_time_downsample, 
-                                 mesodynamic.shape[0]//self.online_time_downsample, *mesodynamic.shape[1:]), axis=0)
-            masks= (np.mean(masks.reshape(self.online_time_downsample, 
-                           masks.shape[0]//self.online_time_downsample, *masks.shape[1:]), axis=0) > 0.49).astype(self.type)
+            mesodynamic= np.mean(mesodynamic.reshape(
+                            mesodynamic.shape[0]//self.online_time_downsample, 
+                            self.online_time_downsample,
+                            *mesodynamic.shape[1:]), axis=1)
+            masks= (np.mean(masks.reshape(
+                            masks.shape[0]//self.online_time_downsample, 
+                            self.online_time_downsample, 
+                            *masks.shape[1:]), axis=1) > 0.49).astype(self.type)
 
         #Standarization of coordinate data
         min_long, max_long, min_lat, max_lat= -15, 30, 35, 70

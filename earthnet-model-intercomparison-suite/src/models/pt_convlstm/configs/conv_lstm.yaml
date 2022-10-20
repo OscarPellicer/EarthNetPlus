@@ -1,8 +1,8 @@
 Seed: 42
 Architecture: "conv_lstm"
-time_downsample: 2 #Global downsampling used
-context_length: 5 #Change according to downsampling. E.g.: 5 for time_downsample 2
-target_length: 10 #Change according to downsampling. E.g.: 10 for time_downsample 2
+time_downsample: 1 #Global downsampling used
+context_length: 10 #Change according to downsampling. E.g.: 5 for time_downsample 2
+target_length: 20 #Change according to downsampling. E.g.: 10 for time_downsample 2
 dataset_dir: "D:/oscar/EarthNet" #Path to the original unprocessed dataset (for evaluation)
 
 Logger:
@@ -17,7 +17,7 @@ Data:
   fp16: True
   val_pct: 0.01
   val_split_seed: 42
-  train_batch_size: 8
+  train_batch_size: 9
   val_batch_size: 16
   test_batch_size: 16
   train_shuffle: True
@@ -28,7 +28,7 @@ Data:
   online_data_augmentation: True
   #Perform online time downsampling if it was not done already
   #or leave at one to not do anything
-  online_time_downsample: 2
+  online_time_downsample: 1
 
 Task:
   loss:
@@ -41,7 +41,7 @@ Task:
     optimizer:
       - name: 'AdamW' #Before it was Adam
         args:
-          lr: 0.0007
+          lr: 0.0011
           betas: [ 0.9, 0.999 ]
     lr_shedule:
       - name: 'MultiStepLR'
@@ -60,7 +60,7 @@ Trainer:
   limit_val_batches: 1.0
   limit_test_batches: 1.0
   log_every_n_steps: 10
-  max_epochs: 80
+  max_epochs: 75
 
 Model:
   use_clim_vars: True
@@ -71,7 +71,7 @@ Model:
     input_size: [ 128, 128 ]
     hidden_dim: 64
     num_layers: 3
-    kernel_size: [ 3, 3 ]
+    kernel_size: [ 1, 1 ]
     batch_first: False
     bias: True
     use_bn: False
