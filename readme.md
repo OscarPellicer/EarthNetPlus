@@ -1,5 +1,7 @@
-# EarthNet+
-Some changes have been made wrt [EarhNet toolkit](https://github.com/earthnet2021/earthnet-toolkit) and [TUM's conv LSTM approach](https://github.com/dcodrut/weather2land):
+# EarthNet+: tests on the EarthNet data
+The purpose of this repo was to try some simple changes to [EarhNet toolkit](https://github.com/earthnet2021/earthnet-toolkit) and [TUM's conv LSTM approach](https://github.com/dcodrut/weather2land) in order to improve the EarhtNet score. The final model achieves EarthNet scores of 0.3306 for the `iid` test set, and 0.3244 for the `ood` test set. The greatest improvement seems to come from adding land cover masks.
+
+This repository implements the following features (with respect to the other repositories).
  - Improved expermient management: all experiment data (tensorboard logs, model predictions, final scores) is now stored by default in the experiment folder.
  - Improved configuration / train / test scripts
  - Improved preprocessing: if using a preprocessed dataset (read more below), missing data (e.g. due to clouds) now is reconstruced by using previous and next available images in the time series.
@@ -12,6 +14,12 @@ Some changes have been made wrt [EarhNet toolkit](https://github.com/earthnet202
  - Added option: simple online data augmentation (90º rotations and flipping)
  - No more warnings or errors during training in the latest pytorch lightning version.
  - Several more small fixes and QoL upgrades
+
+## Some thoughts
+ - There is now a paper using a transformer architecture (albeit also with convolutions), [Earthformer](https://openreview.net/forum?id=lzZstLVGVGW) that seems to have achieved a high score of 0.3425 for the `iid` test set, and 0.3252 for the `ood` test set ([EarthNet scores](https://www.earthnet.tech/docs/ch-leaderboard/#robustness-ood)).
+ - Transformer or not, local spatio-temporal attention will probably improve the results.
+ - Additionally, the model might benefit from adding some extra features (such as land cover, or climate variables) using attention at different stages, rather than simply concatenating them to the input.
+ - More complex architectures (with larger hidden dimensionality, more layers, etc.) might also be useful
 
 ## Installation
 ``` {bash}
