@@ -5,7 +5,7 @@ This repository implements the following features (with respect to the other rep
  - Improved expermient management: all experiment data (tensorboard logs, model predictions, final scores) is now stored by default in the experiment folder.
  - Improved configuration / train / test scripts
  - Improved preprocessing: if using a preprocessed dataset (read more below), missing data (e.g. due to clouds) now is reconstruced by using previous and next available images in the time series.
- - Improved preprocessing: The data is preprocessed and stored to occupy less than half the original space for quicker reads during model training.
+ - Improved preprocessing: The data can be preprocessed to offload some computation from the data loader.
  - Improved preprocessing: Climate variables are interpolated (0th, 1st, or 3rd order)
  - You can now also add landcover masks to the inputs
  - Added option: more convolutions per layer
