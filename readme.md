@@ -16,7 +16,7 @@ This repository implements the following features (with respect to the other rep
  - Several more small fixes and QoL upgrades
 
 ## Some thoughts
- - There is now a paper using a transformer architecture (albeit also with convolutions), [Earthformer](https://openreview.net/forum?id=lzZstLVGVGW) that seems to have achieved a high score of 0.3425 for the `iid` test set, and 0.3252 for the `ood` test set ([EarthNet scores](https://www.earthnet.tech/docs/ch-leaderboard/#robustness-ood)).
+ - There is now a paper using a transformer architecture (albeit also with convolutions), [Earthformer](https://openreview.net/forum?id=lzZstLVGVGW) that seems to have achieved a high score of 0.3425 for the `iid` test set, and 0.3252 for the `ood` test set ([EarthNet scores](https://www.earthnet.tech/docs/ch-leaderboard/#robustness-ood)). Many of the changes added in this repository deal mostly with improved data preprocessing, and they could be useful for other models as well, such as the EarthFormer.
  - Transformer or not, local spatio-temporal attention will probably improve the results.
  - Additionally, the model might benefit from adding some extra features (such as land cover, or climate variables) using attention at different stages, rather than simply concatenating them to the input.
  - More complex architectures (with larger hidden dimensionality, more layers, etc.) might also be useful
