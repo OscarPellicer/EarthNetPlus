@@ -17,11 +17,6 @@ def str2bool(v):
     else:
         raise argparse.ArgumentTypeError('Boolean value expected.')
 
-ESA_scenes= {0: 'No data', 1: 'Saturated / Defective', 2: 'Dark Area Pixels',
-             3: 'Cloud Shadows', 4: 'Vegetation', 5: 'Bare Soils', 6: 'Water',
-             7: 'Clouds low probability / Unclassified', 8: 'Clouds medium probability',
-             9: 'Clouds high probability', 10: 'Cirrus', 11: 'Snow / Ice'}
-
 def timer(func):
     def wrap_func(*args, **kwargs):
         t1 = time()

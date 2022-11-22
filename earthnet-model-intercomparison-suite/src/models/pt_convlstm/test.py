@@ -34,6 +34,7 @@ __TRACKS__ = {
         "ood": "ood_test_split/",
         "ex": "extreme_test_split/",
         "sea": "seasonal_test_split/",
+        "custom": "custom_test_split/", #Added for debugging
     }
 
 
@@ -46,6 +47,9 @@ def test_model(setting_dict: dict, checkpoint: str):
     vars(data_params)['time_downsample']= setting_dict['time_downsample']
     assert setting_dict['time_downsample'] >= vars(data_params)['online_time_downsample'],\
         "If applying online_time_downsample, time_downsample must set to online_time_downsample"
+    if str2bool(setting_dict['use_unprocessed_data']):
+        vars(data_params)['base_dir']= setting_dict['dataset_dir']
+    vars(data_params)['use_unprocessed_data']= str2bool(setting_dict['use_unprocessed_data'])
     dm = EarthNet2021DataModule(data_params)
 
     # Model
@@ -107,6 +111,8 @@ if __name__ == "__main__":
     parser.add_argument('--pred_dir', type=str, default=None, metavar='path/to/predictions/directory/',
                         help='Path where to save predictions')
     parser.add_argument('--evaluate', type=str2bool, default=False, help='Evaluate predictions too?')
+    # parser.add_argument('--percentage', type=float, default=1., metavar='1',
+    #                     help='Percentage of test data to predict (mostly for debugging reasons)')
 
     args = parser.parse_args()
 
@@ -160,5 +166,5 @@ if __name__ == "__main__":
             data_output_file = os.path.join(save_dir, 'data.json')
             ens_output_file = os.path.join(save_dir, 'model.json')
 
-            EarthNetScore.get_ENS(setting_dict["Task"]["pred_dir"], os.path.join(setting_dict["dataset_dir"], __TRACKS__[track], 'target'), 
+            EarthNetScore.get_ENS(os.path.join(setting_dict["Task"]["pred_dir"], 'target'), os.path.join(setting_dict["dataset_dir"], __TRACKS__[track], 'target'), 
                                   n_workers=8, data_output_file=data_output_file, ens_output_file=ens_output_file)

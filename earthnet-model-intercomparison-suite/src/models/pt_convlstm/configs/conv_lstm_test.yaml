@@ -1,0 +1,85 @@
+Seed: 42
+Architecture: "conv_lstm"
+time_downsample: 1 #Global downsampling used
+context_length: 10 #Change according to downsampling. E.g.: 5 for time_downsample 2
+target_length: 20 #Change according to downsampling. E.g.: 10 for time_downsample 2
+dataset_dir: "D:/oscar/EarthNet" #Path to the original unprocessed dataset (for evaluation)
+use_unprocessed_data: True #Use unprocessed dataset, instead of Data.base_dir for training
+
+Logger:
+  save_dir: "D:/oscar/Earthnet experiments" #Where logs, weights, and predicitons will be stored
+  name: "conv_lstm" #Experiment name
+
+Data:
+  base_dir: "C:/EarthNet_ss2" #Path to the processed dataset
+  land_cover_dir: "D:/oscar/EarthNet LandCover" #"" #"D:/oscar/EarthNet LandCover" #Path to the landcover directory (set to empty string to avoid loading it)
+  test_track: "iid"
+  noisy_masked_pixels: False #Set to always to False
+  use_meso_static_as_dynamic: False
+  fp16: False #Everything seems to work well set to True
+  val_pct: 0.01
+  val_split_seed: 42
+  train_batch_size: 4 #Maximum batch size for 12Gb GPU: 5 / 9 (if using half precission)
+  val_batch_size: 16
+  test_batch_size: 16
+  train_shuffle: True
+  pin_memory: True
+  train_workers: 8
+  val_workers: 4
+  test_workers: 8
+  online_data_augmentation: True
+  #Perform online time downsampling if it was not done already
+  #or leave at one to not do anything
+  online_time_downsample: 1
+  climate_interp_order: 3 #Interpolate climate vars. Untested
+
+Task:
+  loss:
+    name: "masked"
+    args: {
+      distance_type: "L1"
+    }
+  n_stochastic_preds: 1
+  optimization:
+    optimizer:
+      - name: 'AdamW' #Adam or AdamW
+        args:
+          lr: 0.001 #0.001 for batch size of 8
+          betas: [ 0.9, 0.999 ]
+    lr_shedule:
+      - name: 'MultiStepLR'
+        args:
+          milestones: [ 10, 20, 50]
+          gamma: 0.5
+  n_log_batches: 1
+  compute_ens_on_test: False
+
+Trainer:
+  accelerator: 'gpu' #Update to PL2.0
+  devices: 1         #Update to PL2.0
+  #gpus: 4
+  #strategy: 'ddp'
+  accumulate_grad_batches: 2
+  limit_train_batches: 1.0
+  limit_val_batches: 1.0
+  limit_test_batches: 1.0
+  log_every_n_steps: 10
+  max_epochs: 60
+
+Model:
+  use_clim_vars: True
+  use_dem_as_dynamic: True
+  use_mask_as_input: False #Add missingness as input.. seems to worsen the result
+  use_day: False #Add day of year. No iprovement
+  use_land_cover: True #Add land cover mask. Untested
+  fix_clim_offset: True #Climate variables should be taken from t+1, not t. Marginal improvement
+  args:
+    input_size: [ 128, 128 ]
+    hidden_dim: 32
+    num_layers: 3
+    kernel_size: [ 3, 3 ]
+    batch_first: False
+    bias: True
+    use_bn: False
+    convs_per_cell: 1 #Add several convolutions per recurrent cell (only one by default)
+    predict_delta: True #Marginal improvement

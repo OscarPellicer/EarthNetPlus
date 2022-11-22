@@ -23,6 +23,7 @@ __TRACKS__ = {
         "ood": "ood_test_split/",
         "ex": "extreme_test_split/",
         "sea": "seasonal_test_split/",
+        "custom": "custom_test_split/", #Added for debugging
     }
 
 if __name__ == "__main__":

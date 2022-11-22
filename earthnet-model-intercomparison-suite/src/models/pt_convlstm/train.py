@@ -6,6 +6,10 @@ from pathlib import Path
 import pytorch_lightning as pl
 import yaml
 
+utils_dir = Path(__file__).resolve().parent.parent.parent.parent.parent
+sys.path.append(str(utils_dir))
+from utils import str2bool
+
 # go to the project root directory and add it to path
 proj_root_dir = Path(__file__).resolve().parent.parent.parent.parent
 sys.path.append(str(proj_root_dir))
@@ -39,6 +43,9 @@ def train_model(setting_dict: dict):
     vars(data_params)['time_downsample']= setting_dict['time_downsample']
     assert setting_dict['time_downsample'] >= vars(data_params)['online_time_downsample'],\
         "If applying online_time_downsample, time_downsample must be set to online_time_downsample"
+    if str2bool(setting_dict['use_unprocessed_data']):
+        vars(data_params)['base_dir']= setting_dict['dataset_dir']
+    vars(data_params)['use_unprocessed_data']= str2bool(setting_dict['use_unprocessed_data'])
     dm = EarthNet2021DataModule(data_params)
 
     # Model

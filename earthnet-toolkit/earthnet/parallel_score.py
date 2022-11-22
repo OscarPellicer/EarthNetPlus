@@ -302,7 +302,8 @@ class CubeCalculator:
             targs = targs[:,:,:,-preds.shape[-1]:]
             masks = masks[:,:,:,-preds.shape[-1]:]
         
-        assert(preds.shape == targs.shape)
+        if not(preds.shape == targs.shape):
+            raise RuntimeError(f'{preds.shape=}; {targs.shape=}')
 
         preds[preds < 0] = 0
         preds[preds > 1] = 1
@@ -393,20 +394,30 @@ class EarthNetScore:
 
         pred_dir, targ_dir = Path(pred_dir), Path(targ_dir)
 
-        if "target" in [d.name for d in targ_dir.glob("*") if d.is_dir()]:
-            targ_dir = targ_dir/"target"
+        # if "target" in [d.name for d in targ_dir.glob("*") if d.is_dir()]:
+        #     targ_dir = targ_dir/"target"
 
-        #assert({d.name for d in pred_dir.glob("*") if d.is_dir()}.issubset({d.name for d in targ_dir.glob("*") if d.is_dir()}))
+        folders_pred= {d.name for d in pred_dir.glob("*") if d.is_dir()}
+        folders_targ= {d.name for d in targ_dir.glob("*") if d.is_dir()}
+        if not folders_pred.issubset(folders_targ):
+            #Attempt to fix
+            targ_dir = targ_dir/"target"
+            folders_targ= {d.name for d in targ_dir.glob("*") if d.is_dir()}
+            if not folders_pred.issubset(folders_targ):
+                raise RuntimeError(f'Prediction folders: \n{folders_pred}\nare not a subset of target folders:\n{folders_targ}')
 
         targ_paths = sorted(list(targ_dir.glob("**/*.npz")))
 
         filepaths = []
-        for targ_path in tqdm(targ_paths):
+        for i, targ_path in enumerate(tqdm(targ_paths)):
 
-            pred_paths = sorted(list(pred_dir.glob(f"**/*{self.__name_getter(targ_path)}")))
+            name= self.__name_getter(targ_path)
+            pred_paths = sorted(list(pred_dir.glob(f"**/*{name}")))
             assert (len(pred_paths) <= 10),"EarthNetScore is calculated with up to 10 predictions for a target, but more than 10 predictions were found."
             for pred_path in pred_paths:
                 filepaths.append({"pred_filepath": pred_path, "targ_filepath": targ_path})
+            if i == 0 and pred_paths == []:
+                raise RuntimeError(f'pred_paths is empty. Globed \"{f"**/*{name}"}\" from \"{pred_dir}\" and found nothing.')
         
         self.filepaths = filepaths
 
@@ -426,9 +437,12 @@ class EarthNetScore:
         regex = re.compile('\d{2}[A-Z]{3}')
         if bool(regex.match(components[0])):
             return path.name
-        else:
-            assert(bool(regex.match(components[1])))
+        elif bool(regex.match(components[1])):
             return "_".join(components[1:]) 
+        elif bool(regex.match(components[2])):
+            return "_".join(components[2:]) 
+        else:
+            raise RuntimeError(f'name {components} had unexpected format')
 
     def compute_scores(self, n_workers: Optional[int] = -1) -> dict:
         """Compute subscores for all cubepaths

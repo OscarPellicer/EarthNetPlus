@@ -34,7 +34,6 @@ class ConvLSTMCell(nn.Module):
         self.height, self.width = input_size
         self.input_dim = input_dim
         self.hidden_dim = hidden_dim
-
         self.kernel_size = kernel_size
 
         self.padding = kernel_size[0] // 2, kernel_size[1] // 2
@@ -95,7 +94,7 @@ class ConvLSTMCell(nn.Module):
 class ConvLSTM(nn.Module):
 
     def __init__(self, input_size, input_dim, hidden_dim, kernel_size, num_layers,
-                 batch_first=False, bias=True, use_bn=False, convs_per_cell=1):
+                 batch_first=False, bias=True, use_bn=False, convs_per_cell=1, predict_delta=False):
         super(ConvLSTM, self).__init__()
 
         self._check_kernel_size_consistency(kernel_size)
@@ -112,6 +111,9 @@ class ConvLSTM(nn.Module):
         self.kernel_size = kernel_size
         self.num_layers = num_layers
         self.batch_first = batch_first
+        self.predict_delta= predict_delta
+        if self.predict_delta:
+            print('Info: predicting delta: make sure that the input image is contained in the first channels')
         self.bias = bias
         self.use_bn = use_bn
         self.convs_per_cell= convs_per_cell
@@ -156,6 +158,9 @@ class ConvLSTM(nn.Module):
                 h, c = res
             hidden_state[layer_idx] = h, c
             cur_layer_input = h
+
+        if self.predict_delta:
+            h= h + input_tensor[:,:h.shape[1]]
 
         if return_gates:
             return h, hidden_state, all_gates

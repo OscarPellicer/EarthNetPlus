@@ -175,7 +175,7 @@ class STFTask(pl.LightningModule):
                             pred2[k::self.hparams.time_downsample]= pred
                     pred= pred2
                 #save(str(cube_path), pred.permute(2,3,1,0), 'zip')
-                np.savez_compressed(str(cube_path) + '.npz', highresdynamic=np.transpose(pred,(2, 3, 1, 0)))
+                np.savez_compressed(str(cube_path), highresdynamic=np.transpose(pred,(2, 3, 1, 0)))
 
     def log_viz(self, viz_data, batch, batch_idx):
         tensorboard_logger = self.logger.experiment

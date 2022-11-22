@@ -28,8 +28,10 @@ class ConvLSTMen(nn.Module):
             input_dim += 1 #DEM
         if self.hparams.use_mask_as_input:
             input_dim += 1 #Good quality mask
-        if self.hparams.use_scalars:
-            input_dim += 4 #(long, lat, daysin, daycos)
+        if self.hparams.use_day:
+            input_dim += 2 #(daysin, daycos)
+        if self.hparams.use_land_cover:
+            input_dim += 13 #All classes except for cloud and unavailable
 
         self.hparams.args['input_dim'] = input_dim
 
@@ -64,18 +66,20 @@ class ConvLSTMen(nn.Module):
         parser.add_argument("--target_length", type=int, default=20)
         parser.add_argument("--use_clim_vars", type=str2bool, default=True)
         parser.add_argument("--use_mask_as_input", type=str2bool, default=False)
-        parser.add_argument("--use_scalars", type=str2bool, default=True)
+        parser.add_argument("--use_day", type=str2bool, default=False)
         parser.add_argument("--use_dem_as_dynamic", type=str2bool, default=True)
         parser.add_argument('--time_downsample', type = int, default = 1)
+        parser.add_argument('--fix_clim_offset', type = str2bool, default = False)
+        parser.add_argument('--use_land_cover', type = str2bool, default = False)
 
         return parser
 
     def get_output_frame(self, hidden_state):
         # use the last hidden state
-        h_last = hidden_state[-1][0]
+        pred_frame = hidden_state[-1][0]
 
         # ensure that the values are positive
-        pred_frame = torch.relu(h_last)
+        pred_frame = torch.relu(pred_frame)
 
         return pred_frame
 
@@ -95,10 +99,15 @@ class ConvLSTMen(nn.Module):
             clims = data["dynamic"][1][:, :, :5, ...]
 
             _, t2, c2, h2, w2 = clims.shape
-            if w2 != 2: #Compatibility with full maps
+            if w2 == 80: #Full map is provided
                 clims = clims[...,39:41,39:41]
-            clims = self.upsample(clims.reshape(b, t2*c2, 2, 2))
-            clims = clims.reshape(b, t2, c2, h, w)
+                clims = self.upsample(clims.reshape(b, t2*c2, 2, 2)).reshape(b, t2, c2, h, w)
+            elif w2 == 128:
+                pass #Nothing to do, assume it is already resampled
+            elif w2 == 2:
+                clims= self.upsample(clims.reshape(b, t2*c2, 2, 2)).reshape(b, t2, c2, h, w)
+            else:
+                raise RuntimeError(f'clims\' shape must be in [2, 80, 128], found: {w2}')
 
         #If mask is used for training, it must be all ones in prediction (i.e.: all nn-predicted)
         #data is assumed to be good!
@@ -108,7 +117,8 @@ class ConvLSTMen(nn.Module):
             mask= torch.cat([mask_og[:, :self.hparams.context_length, ...],
                              torch.ones((b, self.hparams.target_length, c3, w3, h3), 
                              dtype=mask_og.dtype, device=mask_og.device)], axis=1)
-        scalars= data["scalars"]
+        day= data["scalars"][0]
+        land_cover= data["land_cover"]
 
         # Step 1: encode the context frames
         hidden_state = self.conv_lstm._init_hidden(batch_size=b)
@@ -121,14 +131,17 @@ class ConvLSTMen(nn.Module):
             if self.hparams.use_dem_as_dynamic:
                 inputs.append(dem)
 
+            if self.hparams.use_land_cover:
+                inputs.append(land_cover)
+
             if self.hparams.use_clim_vars:
-                inputs.append(clims[:, t])
+                inputs.append(clims[:, (t+1) if self.hparams.fix_clim_offset else t])
 
             if self.hparams.use_mask_as_input:
                 inputs.append(mask[:, t, [0]])
             
-            if self.hparams.use_scalars:
-                inputs.append(scalars[:, t]) #Add scalars 
+            if self.hparams.use_day:
+                inputs.append(day[:, t])
 
             inputs = torch.cat(inputs, dim=1)
 
@@ -152,14 +165,18 @@ class ConvLSTMen(nn.Module):
             if self.hparams.use_dem_as_dynamic:
                 inputs.append(dem)
 
+            if self.hparams.use_land_cover:
+                inputs.append(land_cover)
+
             if self.hparams.use_clim_vars:
-                inputs.append(clims[:, self.hparams.context_length + t, ...])
+                inputs.append(clims[:, self.hparams.context_length + 
+                                    ((t+1) if self.hparams.fix_clim_offset else t)])
 
             if self.hparams.use_mask_as_input:
-                inputs.append(mask[:, self.hparams.context_length + t, [0], ...])
+                inputs.append(mask[:, self.hparams.context_length + t, [0]])
 
-            if self.hparams.use_scalars:
-                inputs.append(scalars[:, self.hparams.context_length + t, ...]) #Add scalars 
+            if self.hparams.use_day:
+                inputs.append(day[:, self.hparams.context_length + t]) #Add scalars 
 
             inputs = torch.cat(inputs, dim=1)
 
