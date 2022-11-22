@@ -52,8 +52,8 @@ python preprocess.py --download True --preprocess True --download_path "D:\Earth
 
 ## Training, testing and evaluation
 
-First, edit the file `./earthnet-model-intercomparison-suite/src/models/pt_convlstm/configs/conv_lstm.yaml` to point to the correct paths
-There are three configuration files: 
+First, make a copy and the file `./earthnet-model-intercomparison-suite/src/models/pt_convlstm/configs/conv_lstm_test.yaml` to point to the correct paths, and to configure it to your liking.
+There are two configuration files: 
  - `conv_lstm_legacy.yaml` trains a model that should be very close to the original in [TUM's conv LSTM approach](https://github.com/dcodrut/weather2land), for reference
  - `conv_lstm_test.yaml` adds some functionality that has been tested to improve predicions
 
